@@ -3,25 +3,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { MapView } from './components/MapView';
 import { Dashboard } from './components/Dashboard';
 import { RegionComparison } from './components/RegionComparison';
-import { Favorites } from './components/Favorites';
 import PopulationData from './components/PopulationData';
 
 import { SearchBar } from './components/SearchBar';
-import { Map, BarChart3, GitCompare, Heart, Building2, Users } from 'lucide-react';
+import { Map, BarChart3, GitCompare, Building2, Users } from 'lucide-react';
 
 export default function App() {
   const [selectedRegion, setSelectedRegion] = useState<string>('강남구');
-  const [favorites, setFavorites] = useState<string[]>(['강남구', '서초구']);
-
-  const addToFavorites = (region: string) => {
-    if (!favorites.includes(region)) {
-      setFavorites([...favorites, region]);
-    }
-  };
-
-  const removeFromFavorites = (region: string) => {
-    setFavorites(favorites.filter(fav => fav !== region));
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -38,7 +26,7 @@ export default function App() {
               </h1>
             </div>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              서울시 25개 자치구의 상세한 상권 분석 데이터를 통해 최적의 창업 위치를 찾아보세요
+              서울시 자치구의 상세한 상권 분석 데이터를 통해 최적의 창업 위치를 찾아보세요
             </p>
           </div>
 
@@ -54,7 +42,7 @@ export default function App() {
       {/* 메인 콘텐츠 */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="map" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-white/50 backdrop-blur-sm p-1 rounded-xl shadow-lg">
+          <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-xl shadow-lg">
             <TabsTrigger value="map" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg transition-all">
               <Map className="h-4 w-4" />
               지도 검색
@@ -71,26 +59,18 @@ export default function App() {
               <Users className="h-4 w-4" />
               인구 통계
             </TabsTrigger>
-            <TabsTrigger value="favorites" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg transition-all">
-              <Heart className="h-4 w-4" />
-              즐겨찾기
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="map" className="mt-8">
             <MapView 
               selectedRegion={selectedRegion}
               onRegionSelect={setSelectedRegion}
-              onAddToFavorites={addToFavorites}
-              favorites={favorites}
             />
           </TabsContent>
 
           <TabsContent value="dashboard" className="mt-8">
             <Dashboard 
               selectedRegion={selectedRegion}
-              onAddToFavorites={addToFavorites}
-              favorites={favorites}
             />
           </TabsContent>
 
@@ -100,14 +80,6 @@ export default function App() {
 
           <TabsContent value="population" className="mt-8">
             <PopulationData />
-          </TabsContent>
-
-          <TabsContent value="favorites" className="mt-8">
-            <Favorites 
-              favorites={favorites}
-              onRemoveFromFavorites={removeFromFavorites}
-              onRegionSelect={setSelectedRegion}
-            />
           </TabsContent>
         </Tabs>
       </div>

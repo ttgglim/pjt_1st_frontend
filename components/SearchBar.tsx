@@ -3,7 +3,7 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Search, MapPin, Clock } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface SearchBarProps {
@@ -13,7 +13,6 @@ interface SearchBarProps {
 
 export function SearchBar({ onRegionSelect, selectedRegion }: SearchBarProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [recentSearches] = useState(['강남구', '서초구', '마포구', '종로구']);
 
   const seoulDistricts = [
     '강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구',
@@ -65,26 +64,7 @@ export function SearchBar({ onRegionSelect, selectedRegion }: SearchBarProps) {
         </div>
       </div>
 
-      {recentSearches.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-gray-200/50">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-4 w-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-600">최근 검색한 지역</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {recentSearches.map((search) => (
-              <Badge
-                key={search}
-                variant="secondary"
-                className="cursor-pointer hover:bg-blue-100 hover:text-blue-700 transition-colors bg-gray-100 text-gray-700"
-                onClick={() => onRegionSelect(search)}
-              >
-                {search}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

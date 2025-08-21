@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Heart, MapPin, Users, Building, DollarSign } from 'lucide-react';
+import { MapPin, Users, Building, DollarSign } from 'lucide-react';
 import { CompleteSeoulMap } from './CompleteSeoulMap';
 
 import { apiService, PopulationStatistics } from '../services/api';
@@ -10,11 +10,9 @@ import { apiService, PopulationStatistics } from '../services/api';
 interface MapViewProps {
   selectedRegion: string;
   onRegionSelect: (region: string) => void;
-  onAddToFavorites: (region: string) => void;
-  favorites: string[];
 }
 
-export function MapView({ selectedRegion, onRegionSelect, onAddToFavorites, favorites }: MapViewProps) {
+export function MapView({ selectedRegion, onRegionSelect }: MapViewProps) {
   const [populationData, setPopulationData] = useState<PopulationStatistics | null>(null);
   const [avgMonthlySales, setAvgMonthlySales] = useState<number | null>(null);
   const [recentBusinesses, setRecentBusinesses] = useState<number | null>(null);
@@ -81,8 +79,7 @@ export function MapView({ selectedRegion, onRegionSelect, onAddToFavorites, favo
       <div className="lg:col-span-2">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3>서울시 상권 지도</h3>
-            <Badge variant="outline">실시간 데이터</Badge>
+            <h2 className="text-2xl font-bold text-gray-800">서울시 상권 지도</h2>
           </div>
           
           <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg h-96 overflow-hidden">
@@ -103,14 +100,6 @@ export function MapView({ selectedRegion, onRegionSelect, onAddToFavorites, favo
               <MapPin className="h-5 w-5 text-primary" />
               <h3>{selectedRegion}</h3>
             </div>
-            <Button
-              size="sm"
-              variant={favorites.includes(selectedRegion) ? "default" : "outline"}
-              onClick={() => onAddToFavorites(selectedRegion)}
-            >
-              <Heart className="h-4 w-4 mr-1" />
-              {favorites.includes(selectedRegion) ? '즐겨찾기됨' : '즐겨찾기'}
-            </Button>
           </div>
 
           <div className="space-y-4">
@@ -169,16 +158,6 @@ export function MapView({ selectedRegion, onRegionSelect, onAddToFavorites, favo
             </div>
 
 
-          </div>
-
-          <div className="mt-6 pt-4 border-t">
-            <h4 className="font-medium mb-3">주요 업종</h4>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">음식점</Badge>
-              <Badge variant="outline">카페</Badge>
-              <Badge variant="outline">소매업</Badge>
-              <Badge variant="outline">서비스업</Badge>
-            </div>
           </div>
         </Card>
       </div>
