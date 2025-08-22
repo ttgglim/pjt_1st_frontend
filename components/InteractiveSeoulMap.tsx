@@ -28,52 +28,83 @@ export function InteractiveSeoulMap({ selectedRegion, onRegionSelect, className 
     setHoveredRegion(null);
   };
 
-  // 호버된 지역이나 선택된 지역의 API 데이터 가져오기
+  // 모든 지역의 API 데이터를 미리 로드
   useEffect(() => {
-    const fetchApiData = async (regionName: string) => {
-      if (apiData[regionName]) return; // 이미 데이터가 있으면 스킵
-      
-      try {
-        const [populationData, salesData, businessesData] = await Promise.all([
-          apiService.getDistrictByName(regionName),
-          apiService.getAverageMonthlySalesByDistrict(regionName),
-          apiService.getRecentBusinessesByDistrict(regionName)
-        ]);
+    const allDistricts = [
+      '강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구',
+      '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구',
+      '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'
+    ];
+
+    const fetchAllApiData = async () => {
+      const promises = allDistricts.map(async (district) => {
+        if (apiData[district]) return; // 이미 데이터가 있으면 스킵
         
-        setApiData(prev => ({
-          ...prev,
-          [regionName]: {
-            population: populationData.totalPopulation,
-            businesses: businessesData,
-            monthlySales: salesData
-          }
-        }));
-      } catch (error) {
-        console.error(`Failed to fetch data for ${regionName}:`, error);
-      }
+        try {
+          const [populationData, salesData, businessesData] = await Promise.all([
+            apiService.getDistrictByName(district),
+            apiService.getAverageMonthlySalesByDistrict(district),
+            apiService.getRecentBusinessesByDistrict(district)
+          ]);
+          
+          return {
+            district,
+            data: {
+              population: populationData.totalPopulation,
+              businesses: businessesData,
+              monthlySales: salesData
+            }
+          };
+        } catch (error) {
+          console.error(`Failed to fetch data for ${district}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(promises);
+      const newData: {[key: string]: any} = {};
+      
+      results.forEach(result => {
+        if (result) {
+          newData[result.district] = result.data;
+        }
+      });
+
+      setApiData(prev => ({
+        ...prev,
+        ...newData
+      }));
     };
 
-    if (hoveredRegion) {
-      fetchApiData(hoveredRegion);
-    }
-    if (selectedRegion) {
-      fetchApiData(selectedRegion);
-    }
-  }, [hoveredRegion, selectedRegion, apiData]);
+    fetchAllApiData();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   const getPathStyle = (regionName: string) => {
     const isSelected = selectedRegion === regionName;
     const isHovered = hoveredRegion === regionName;
-    const data = getDistrictData(regionName);
-    const color = data ? getSalesColor(data.sales) : '#e5e7eb';
+    
+    // API 데이터에서 실제 매출 데이터 사용
+    const apiRegionData = apiData[regionName];
+    let color = '#e5e7eb'; // 기본 색상 (회색)
+    
+           if (apiRegionData && apiRegionData.monthlySales > 0) {
+         // 실제 DB 데이터 기반 색상 결정 (1450억 미만 ~ 1550억, 6개 구간)
+         const monthlySales = apiRegionData.monthlySales / 100000000; // 억원 단위로 변환
+         if (monthlySales >= 1550) color = '#ef4444'; // 빨강 - 월 1550억원 이상
+         else if (monthlySales >= 1525) color = '#f97316'; // 주황 - 월 1525-1550억원
+         else if (monthlySales >= 1500) color = '#f59e0b'; // 노랑 - 월 1500-1525억원
+         else if (monthlySales >= 1475) color = '#22c55e'; // 초록 - 월 1475-1500억원
+         else if (monthlySales >= 1450) color = '#3b82f6'; // 파랑 - 월 1450-1475억원
+         else color = '#8b5cf6'; // 보라 - 월 1450억원 미만
+       }
     
     return {
-      fill: isSelected ? '#1d4ed8' : (isHovered ? '#3b82f6' : color),
-      stroke: isSelected ? '#1e40af' : '#ffffff',
+      fill: isSelected ? '#7c3aed' : (isHovered ? '#3b82f6' : color),
+      stroke: isSelected ? '#6d28d9' : '#ffffff',
       strokeWidth: isSelected ? '3' : '2',
       cursor: 'pointer',
       transition: 'all 0.2s ease-in-out',
-      opacity: isHovered || isSelected ? 0.9 : 0.7
+      opacity: isHovered || isSelected ? 1.0 : 0.9 // 기본 opacity를 0.9로 높여서 색상이 더 명확하게 보이도록 함
     };
   };
 
@@ -206,23 +237,27 @@ export function InteractiveSeoulMap({ selectedRegion, onRegionSelect, className 
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span>월 170억원 이상</span>
+            <span>월 1550억원 이상</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-orange-500 rounded"></div>
-            <span>월 125~170억원</span>
+            <span>월 1525~1550억원</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-            <span>월 85~125억원</span>
+            <span>월 1500~1525억원</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span>월 40~85억원</span>
+            <span>월 1475~1500억원</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span>월 40억원 미만</span>
+            <span>월 1450~1475억원</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-purple-500 rounded"></div>
+            <span>월 1450억원 미만</span>
           </div>
         </div>
       </div>
